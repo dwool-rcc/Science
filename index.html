@@ -4,33 +4,90 @@
   <meta charset="UTF-8">
   <title>HTML File Index</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    h1 { color: #333; }
-    ul { list-style-type: none; padding: 0; }
-    li { margin: 8px 0; }
-    a { text-decoration: none; color: #0077cc; }
-    a:hover { text-decoration: underline; }
+    body {
+      background-color: #001f3f;
+      color: #f8f8f8;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h1, h2 {
+      color: #f8f8f8;
+    }
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    li {
+      margin: 8px 0;
+    }
+    a {
+      color: #7FDBFF;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .filename {
+      font-size: 0.9em;
+      color: #AAAAAA;
+    }
   </style>
 </head>
 <body>
-  <h1>HTML Files</h1>
-  <ul id="file-list"></ul>
+  <h1>HTML File Index</h1>
+  <div id="content"></div>
 
   <script>
     const files = [
-      "balance.html",
-      "clock_timer.html",
-      "periodic_table_bingo.html"
+      {
+        title: "Balance Game",
+        filename: "balance.html",
+        categories: ["Games", "Education"]
+      },
+      {
+        title: "Clock Timer",
+        filename: "clock_timer.html",
+        categories: ["Utilities"]
+      },
+      {
+        title: "Periodic Table Bingo",
+        filename: "periodic_table_bingo.html",
+        categories: ["Games", "Education"]
+      }
     ];
 
-    const list = document.getElementById('file-list');
+    const categoryMap = {};
+
     files.forEach(file => {
-      const li = document.createElement('li');
-      const a = document.createElement('a');
-      a.href = file;
-      a.textContent = file;
-      li.appendChild(a);
-      list.appendChild(li);
+      file.categories.forEach(cat => {
+        if (!categoryMap[cat]) {
+          categoryMap[cat] = [];
+        }
+        categoryMap[cat].push(file);
+      });
+    });
+
+    const contentDiv = document.getElementById('content');
+
+    Object.keys(categoryMap).sort().forEach(category => {
+      const heading = document.createElement('h2');
+      heading.textContent = category;
+      contentDiv.appendChild(heading);
+
+      const ul = document.createElement('ul');
+      categoryMap[category].forEach(file => {
+        const li = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = file.filename;
+        link.textContent = file.title;
+        const filenameSpan = document.createElement('span');
+        filenameSpan.className = 'filename';
+        filenameSpan.textContent = ` (${file.filename})`;
+        li.appendChild(link);
+        li.appendChild(filenameSpan);
+        ul.appendChild(li);
+      });
+      contentDiv.appendChild(ul);
     });
   </script>
 </body>
