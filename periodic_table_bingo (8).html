@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Periodic Table Bingo</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1, h2 { text-align: center; }
+    .bingo-box {
+      margin: 20px auto;
+      padding: 20px;
+      border: 2px solid #333;
+      text-align: center;
+      font-size: 1.5em;
+      background-color: #f0f0f0;
+      width: 60%;
+    }
+    .element-name {
+      font-size: 1.2em;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .controls {
+      text-align: center;
+      margin: 20px;
+    }
+    .element-list {
+      margin-top: 30px;
+    }
+    .element {
+      margin-bottom: 10px;
+    }
+    label {
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Periodic Table Bingo</h1>
+
+  <div class="controls">
+    <label><input type="checkbox" id="descUse" checked> Description & Uses</label>
+    <label><input type="checkbox" id="atomicNum" checked> Atomic Number</label>
+    <label><input type="checkbox" id="symbol" checked> Symbol</label>
+    <label><input type="checkbox" id="massNum" checked> Mass Number</label>
+    <br><br>
+    <button onclick="nextClue()">Next Clue</button>
+  </div>
+
+  <div class="bingo-box" id="bingoBox">Click "Next Clue" to begin!</div>
+  <div class="element-name" id="elementName"></div>
+
+  <h2>Included Elements</h2>
+  <div class="element-list" id="elementList"></div>
+
+  <script>
+
+	const elements = [
+	  { name: "Hydrogen", symbol: "H", number: 1, mass: 1, 
+		description: "The lightest and most abundant element in the universe. It is a colorless, odorless gas that forms water when combined with oxygen. Highly flammable and used in energy applications.", 
+		uses: ["Fuel cells", "Rocket fuel", "Chemical industry"] },
+	  { name: "Helium", symbol: "He", number: 2, mass: 4, 
+		description: "A noble gas that is completely inert and does not form compounds under normal conditions. It is lighter than air and non-flammable. Often used in applications requiring low temperatures.", 
+		uses: ["Balloons", "Cryogenics", "Welding"] },
+	  { name: "Lithium", symbol: "Li", number: 3, mass: 7, 
+		description: "A soft, silvery metal and the lightest of all metals. Reacts vigorously with water and is essential in modern battery technology. Also used in mental health treatments.", 
+		uses: ["Rechargeable batteries", "Pharmaceuticals", "Alloys"] },
+	  { name: "Beryllium", symbol: "Be", number: 4, mass: 9, 
+		description: "A hard, gray metal that is toxic and used in aerospace applications. Has a high melting point and is transparent to X-rays. Less reactive than other alkali metals.", 
+		uses: ["Aerospace components", "X-ray windows", "Nuclear reactors"] },
+	  { name: "Boron", symbol: "B", number: 5, mass: 11, 
+		description: "A metalloid with properties between metals and nonmetals. Essential in borosilicate glass and industrial applications. Not found in organic life.", 
+		uses: ["Glassmaking", "Detergents", "Nuclear shielding"] },
+	  { name: "Carbon", symbol: "C", number: 6, mass: 12, 
+		description: "Forms millions of compounds and is the backbone of organic chemistry. Exists in forms like graphite and diamond. Found in all known life forms.", 
+		uses: ["Fuels", "Steel production", "Carbon fiber"] },
+	  { name: "Nitrogen", symbol: "N", number: 7, mass: 14, 
+		description: "A colorless, odorless gas that makes up most of Earth's atmosphere. Inert under normal conditions and essential for plant growth. Not used in respiration.", 
+		uses: ["Fertilizers", "Explosives", "Food packaging"] },
+	  { name: "Oxygen", symbol: "O", number: 8, mass: 16, 
+		description: "Supports combustion and is essential for respiration in most life forms. Forms oxides with almost all other elements. Highly reactive and abundant.", 
+		uses: ["Medical gases", "Steelmaking", "Water treatment"] },
+	  { name: "Fluorine", symbol: "F", number: 9, mass: 19, 
+		description: "The most reactive of all elements, this pale yellow gas is extremely corrosive. Forms compounds with almost every other element. Used in many industrial processes.", 
+		uses: ["Toothpaste", "Teflon production", "Uranium enrichment"] },
+	  { name: "Neon", symbol: "Ne", number: 10, mass: 20, 
+		description: "A noble gas that glows bright red-orange in electric signs. Completely inert and does not form compounds. Heavier than helium and used in lighting.", 
+		uses: ["Neon signs", "High-voltage indicators", "Vacuum tubes"] },
+	  { name: "Sodium", symbol: "Na", number: 11, mass: 23, 
+		description: "A soft, silvery metal that reacts violently with water. Essential in nerve function and widely used in chemical industries. Slightly less reactive than potassium.", 
+		uses: ["Table salt", "Street lighting", "Chemical synthesis"] },
+	  { name: "Magnesium", symbol: "Mg", number: 12, mass: 24, 
+		description: "A lightweight metal that burns with a bright white flame. More reactive than calcium but less than sodium. Used in structural and pyrotechnic applications.",
+		uses: ["Fireworks", "Flares", "Alloys"] },
+	  { name: "Aluminum", symbol: "Al", number: 13, mass: 27, 
+		description: "A lightweight, corrosion-resistant metal used in construction and packaging. Most abundant metal in Earth's crust. Does not burn easily.", 
+		uses: ["Cans", "Foil", "Aircraft"] },
+	  { name: "Silicon", symbol: "Si", number: 14, mass: 28, 
+		description: "A metalloid crucial to modern electronics. Forms the basis of semiconductors and solar panels. Not found in organic life.", 
+		uses: ["Computer chips", "Solar cells", "Glass"] },
+	  { name: "Phosphorus", symbol: "P", number: 15, mass: 31, 
+		description: "A reactive nonmetal that glows in the dark in its white form. Essential in DNA and energy transfer in cells. Not found freely in nature.", 
+		uses: ["Fertilizers", "Detergents", "Safety matches"] },
+	  { name: "Sulfur", symbol: "S", number: 16, mass: 32, 
+		description: "A yellow nonmetal with a distinct smell when burned. Found in some amino acids and industrial chemicals. Forms sulfuric acid when oxidized.", 
+		uses: ["Rubber vulcanization", "Fertilizers", "Sulfuric acid production"] },
+	  { name: "Chlorine", symbol: "Cl", number: 17, mass: 35, 
+		description: "A greenish-yellow gas with a strong odor, highly toxic and reactive. Forms salts with metals and is widely used in sanitation. Less reactive than fluorine.",
+		uses: ["Disinfectants", "Bleach", "PVC plastics"] },
+	  { name: "Argon", symbol: "Ar", number: 18, mass: 40, 
+		description: "A noble gas that is completely inert and heavier than air. Used where non-reactivity is essential. Does not glow brightly like neon.", 
+		uses: ["Welding", "Light bulbs", "Inert gas environments"] },
+	  { name: "Potassium", symbol: "K", number: 19, mass: 39, 
+		description: "A soft, silvery metal that reacts explosively with water. More reactive than sodium and essential for nerve function. Not used in structural materials.", 
+		uses: ["Fertilizers", "Fireworks", "Potassium hydroxide production"] },
+	  { name: "Calcium", symbol: "Ca", number: 20, mass: 40, 
+		description: "A silvery-white metal essential for bones and teeth. Reacts with water but less violently than sodium. Abundant in the human body.", 
+		uses: ["Cement", "Dietary supplements", "Metallurgy"] },
+      { name: "Gold", symbol: "Au", number: 79, mass: 197, 
+        description: "A dense, soft metal with excellent conductivity and resistance to corrosion. It has a distinctive yellow color and is highly malleable.", 
+        uses: ["Jewelry", "Electronics", "Currency"] },
+      { name: "Silver", symbol: "Ag", number: 47, mass: 108, 
+        description: "A shiny, white metal with the highest electrical conductivity of all elements. It tarnishes when exposed to sulfur compounds.", 
+        uses: ["Jewelry", "Coins", "Electrical contacts"] },
+      { name: "Lead", symbol: "Pb", number: 82, mass: 207, 
+        description: "A heavy, soft metal that is highly malleable and resistant to corrosion. It is toxic and has been phased out of many applications.", 
+        uses: ["Batteries", "Radiation shielding", "Weights"] },
+      { name: "Tungsten", symbol: "W", number: 74, mass: 184, 
+        description: "A very dense metal with the highest melting point of all elements. It is extremely hard and resistant to wear.", 
+        uses: ["Light bulb filaments", "Cutting tools", "Military applications"] },
+		
+	{ name: "Mercury", symbol: "Hg", number: 80, mass: 201, 
+	  description: "A dense, silvery liquid metal that remains in liquid form at room temperature. It is highly toxic and can evaporate into the air, posing health risks. Often used in devices that measure temperature and pressure.", 
+	  uses: ["Thermometers", "Barometers", "Fluorescent lamps"] },
+
+	{ name: "Uranium", symbol: "U", number: 92, mass: 238, 
+	  description: "A heavy, radioactive metal used as fuel in nuclear reactors. It is capable of sustaining a chain reaction of nuclear fission. Found naturally in minerals and requires enrichment for energy applications.", 
+	  uses: ["Nuclear fuel", "Military armor", "Radiometric dating"] },
+
+	{ name: "Neodymium", symbol: "Nd", number: 60, mass: 144, 
+	  description: "A rare earth metal known for its strong magnetic properties. It is soft and silvery and oxidizes quickly in air. Commonly used in high-performance magnets and electronic devices.", 
+	  uses: ["Magnets", "Headphones", "Laser technology"] },
+
+	{ name: "Titanium", symbol: "Ti", number: 22, mass: 48, 
+	  description: "A strong, lightweight metal with excellent corrosion resistance. It is biocompatible and often used in medical implants. Also used in aerospace and industrial applications.", 
+	  uses: ["Aircraft", "Medical implants", "Paint pigments"] },
+
+	{ name: "Manganese", symbol: "Mn", number: 25, mass: 55, 
+	  description: "A brittle, gray-white metal that is essential in steel production. It improves strength and wear resistance of alloys. Also plays a role in biological processes in small amounts.", 
+	  uses: ["Steel alloys", "Batteries", "Fertilizers"] },
+
+	{ name: "Iron", symbol: "Fe", number: 26, mass: 56, 
+	  description: "A strong, magnetic metal that is one of the most abundant on Earth. It rusts when exposed to moisture and oxygen. Widely used in construction and manufacturing.", 
+	  uses: ["Construction", "Tools", "Automobiles"] },
+
+	{ name: "Nickel", symbol: "Ni", number: 28, mass: 59, 
+	  description: "A hard, silvery-white metal with good corrosion resistance. It is often used in alloys and plating. Also plays a role in rechargeable battery technology.", 
+	  uses: ["Stainless steel", "Coins", "Batteries"] },
+
+	{ name: "Copper", symbol: "Cu", number: 29, mass: 64, 
+	  description: "A reddish metal known for its excellent electrical and thermal conductivity. It is ductile and resistant to corrosion. Commonly used in wiring and plumbing.", 
+	  uses: ["Electrical wiring", "Plumbing", "Coins"] },
+
+	{ name: "Zinc", symbol: "Zn", number: 30, mass: 65, 
+	  description: "A bluish-white metal that is brittle at room temperature but becomes malleable when heated. It resists corrosion and is often used to protect other metals. Also essential for human health in small amounts.", 
+	  uses: ["Galvanization", "Alloys", "Health supplements"] },
+
+	{ name: "Tin", symbol: "Sn", number: 50, mass: 119, 
+	  description: "A soft, malleable metal with a low melting point. It resists corrosion and is often used to coat other metals. Historically used in food containers and alloys.", 
+	  uses: ["Solder", "Tin cans", "Bronze"] },
+
+	{ name: "Arsenic", symbol: "As", number: 33, mass: 75, 
+	  description: "A metalloid with toxic properties that can exist in several allotropic forms. It is used in semiconductors and historically in pesticides. Exposure must be carefully controlled due to its toxicity.", 
+	  uses: ["Semiconductors", "Wood preservatives", "Alloys"] }
+
+    ];
+
+    function nextClue() {
+      const enabledClues = [];
+      if (document.getElementById("descUse").checked) enabledClues.push("descUse");
+      if (document.getElementById("atomicNum").checked) enabledClues.push("atomicNum");
+      if (document.getElementById("symbol").checked) enabledClues.push("symbol");
+      if (document.getElementById("massNum").checked) enabledClues.push("massNum");
+
+      if (enabledClues.length === 0) {
+        alert("Please select at least one clue type.");
+        return;
+      }
+
+      const element = elements[Math.floor(Math.random() * elements.length)];
+      const clueType = enabledClues[Math.floor(Math.random() * enabledClues.length)];
+      let clue = "";
+
+      switch (clueType) {
+        case "descUse":
+          clue = element.description + " Uses: " + element.uses.join(", ");
+          break;
+        case "atomicNum":
+          clue = "Atomic Number: " + element.number;
+          break;
+        case "symbol":
+          clue = "Chemical Symbol: " + element.symbol;
+          break;
+        case "massNum":
+          clue = "Mass Number: " + element.mass;
+          break;
+      }
+
+      document.getElementById("bingoBox").innerText = clue;
+      document.getElementById("elementName").innerText = element.name + " (" + element.symbol + ")";
+    }
+
+    function displayElements() {
+      const list = document.getElementById("elementList");
+      elements.forEach(el => {
+        const div = document.createElement("div");
+        div.className = "element";
+        div.innerHTML = `<strong>${el.name} (${el.symbol})</strong> - Atomic Number: ${el.number}, Mass: ${el.mass}<br>
+                         ${el.description}<br>
+                         Uses: ${el.uses.join(", ")}`;
+        list.appendChild(div);
+      });
+    }
+
+    displayElements();
+  </script>
+</body>
+</html>

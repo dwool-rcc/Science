@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Exam Timer</title>
+<style>
+    :root {
+	  --font-size-timer: 8rem;
+	  --font-size-title: 2.5rem;
+	  --font-size-setup-text: 1rem;
+	  --font-size-timer-text: 1.5rem;
+	  --color-text: #000000;
+	  --color-bg: #ffffff;
+	  --color-bg-left: #f5f5f5
+}
+
+body {
+        font-family: Arial, sans-serif;
+	  margin: 0; padding: 0;
+	  color: var(--color-text);
+	  background-color: var(--color-bg);
+      height: 95vh;
+    }
+	#setupPage {
+	  max-width: 800px;
+	  margin: 0 auto;
+	  font-size: 1rem;
+	  
+	}
+    #setupPage, #timerPage {
+      display: none;
+      padding: 20px;
+	}
+
+    #timerPage.active {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      height: 95vh;
+    }
+
+    #leftColumn {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: var(--color-bg-left);
+      padding: 20px;
+    }
+
+	#logo {
+	  position: absolute;
+	  top: 0;
+	  right: 0;
+	  width: 80%;
+	  height: auto;
+	  object-fit: contain;
+	}
+
+
+
+    #timerList {
+      margin-top: 20px;
+    }
+
+    #currentLabel {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    #instructions {
+      margin-top: 10px;
+      font-size: 1rem;
+    }
+
+	#controls {
+	  display: flex;
+	  gap: 15px;              /* space between buttons */
+	  justify-content: space-between;
+	  padding: 0 10px;
+	  align-items: center;
+	}
+
+	#controls button {
+	  flex: 1 1 0;            /* buttons evenly share the row */
+	  font-size: var(--font-size-title);      /* big text */
+	  padding: 15px 0;        /* taller buttons */
+	  border-radius: 8px;
+	  cursor: pointer;
+	  box-sizing: border-box;
+	}
+
+    #rightColumn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      text-align: center;
+    }
+
+	/* Timer-specific font usage */
+	#timerDisplay {
+	  font-size: var(--font-size-timer);
+	  font-weight: bold;
+	}
+
+    #timeInfo {
+      font-size: var(--font-size-title);
+      margin-top: 20px;
+    }
+
+    #autoStartMsg {
+      margin-bottom: 20px;
+      font-size: 1rem;
+      color: #444;
+    }
+
+	.timerEntry {
+	  display: flex;
+	  flex-direction: column;
+	  text-align: left;
+	  padding: 10px;
+	  background: var(--color-bg);
+	  border: 2px solid #ccc;
+	  border-radius: 5px;
+	}
+	.timerEntry pre {
+	  font-size: var(--font-size-timer-text);
+	  background: transparent;
+	  padding: 0;
+	  margin: 0;
+	}
+	.timerEntry div {
+	  display: flex;
+	  justify-content: space-between;
+	}
+
+	textarea.note {
+	  min-height: 5em;
+	  resize: vertical;
+	}
+    input[type="number"] {
+      width: 60px;
+    }
+	
+	#setupPage,
+	#setupPage input,
+	#setupPage textarea,
+	#setupPage label,
+	#setupPage select,
+	#setupPage button {
+	  font-size: 1rem; /* Lock to base/default */
+	}
+	
+	#timerPage #instructions,
+	#timerPage #timeInfoContainer,
+	#timerPage #currentLabel,
+	#clock {
+	  font-size: var(--font-size-timer-text);
+	}
+	
+	
+	#examTitleDisplay,
+	#setupPage h1,
+	button {
+	  font-size: var(--font-size-title);
+	  font-weight: bold;
+	}
+	
+	#examTitleDisplay {
+	  margin-top: 10px;
+	  margin-bottom: 20px;
+	 }
+	 
+	#rightColumn {
+	  display: flex;
+	  flex-direction: column;
+	  align-items: center;
+	  justify-content: center;
+	  background: var(--color-bg);
+	  text-align: center;
+	  position: relative;
+	}
+
+	
+	#timeInfo div {
+  margin-bottom: 5px;
+  
+	body,
+	#rightColumn {
+	  transition: background-color 0.5s ease, color 0.5s ease;
+	}
+
+	body.invert,
+	#rightColumn.invert {
+	  background-color: var(--color-text) !important;
+	  color: var(--color-bg) !important;
+	}
+
+}
+body.invert,
+#rightColumn.invert {
+  transition: background-color 0.5s, color 0.5s;
+}
+
+body.invert {
+  background-color: var(--color-text) !important;
+  color: var(--color-bg) !important;
+}
+
+#rightColumn.invert {
+  background-color: var(--color-text) !important;
+  color: var(--color-bg) !important;
+}
+
+
+/* Ensure left column remains unchanged */
+#leftColumn {
+  background: var(--color-bg-left);
+  color: var(--color-text);
+}
+
+.time-block {
+  text-align: left;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  font-size: var(--font-size-timer-text);
+
+}
+.time-block .label {
+  font-family: monospace;
+  font-weight: bold;
+}
+.time-block .value {
+  font-family: monospace;
+  margin-left: 10px;
+}
+
+
+#timerDisplay {
+  margin-top: auto;
+  margin-bottom: auto;
+  text-align: center;
+}
+
+#currentTime {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  font-size: var(--font-size-title);
+  margin: 10px;
+  text-align: right;
+}
+
+}
+
+
+#instructions {
+  max-height: 150px; /* Adjust height as needed */
+  overflow-y: auto;
+  padding-right: 10px; /* Optional: space for scrollbar */
+  box-sizing: border-box;
+}
+
+
+#leftColumn {
+  overflow: hidden;
+}
+
+.bottomClock {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  font-size: var(--font-size-title);
+  text-align: right;
+  white-space: nowrap;
+}
+
+
+#timeFooter {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+
+
+#clockContainer {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+  
+
+</style>
+</head>
+<body>
+<div id="setupPage">
+<h1>Exam Timer Setup</h1>
+<div id="setupClock" style="font-size: var(--font-size-setup-text); font-weight: bold; text-align: center; margin-bottom: 10px;">
+  Current Time: <span id="setupClockTime"></span>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 20px;">
+  <div>
+    <label for="timerSizeSelect">Timer Font Size:</label><br>
+    <select id="timerSizeSelect">
+      <option value="xs">Extra Small</option>
+      <option value="sm">Small</option>
+      <option selected value="md">Medium</option>
+      <option value="lg">Large</option>
+      <option value="xl">Extra Large</option>
+    </select>
+  </div>
+  <div>
+    <label for="textSizeSelect">Text/Title Font Size:</label><br>
+    <select id="textSizeSelect">
+      <option value="xs">Extra Small</option>
+      <option value="sm">Small</option>
+      <option selected value="md">Medium</option>
+      <option value="lg">Large</option>
+      <option value="xl">Extra Large</option>
+    </select>
+  </div>
+  <div>
+    <label for="textColorSelect">Text Color:</label><br>
+    <select id="textColorSelect"></select>
+  </div>
+  <div>
+    <label for="bgColorSelect">Background Color:</label><br>
+    <select id="bgColorSelect"></select>
+  </div>
+</div>
+
+<br/>
+<label>
+    Exam Title:
+    <input id="examTitle" name="examTitle" style="width: 80%" type="text" value="Exam"/>
+</label>
+<br><br>
+<div id="timersContainer"></div>
+<button id="addTimerBtn">+ Add Timer</button>
+<hr/>
+<label>
+  Flash Duration:
+  <select id="flashDurationSelect">
+<option value="0">0 second</option>
+<option value="1">1 second</option>
+<option value="2">2 seconds</option>
+<option value="3">3 seconds</option>
+<option value="4">4 seconds</option>
+<option value="5">5 seconds</option>
+<option value="6">6 seconds</option>
+<option value="7">7 seconds</option>
+<option value="8">8 seconds</option>
+<option value="9">9 seconds</option>
+<option selected="" value="10">10 seconds</option>
+<option value="20">20 seconds</option>
+</select>
+</label>
+<br/>
+<button id="flashNowBtn">Flash Now</button>
+<label><input id="simulateCheckbox" name="simulateCheckbox" type="checkbox"/> Simulate (10x speed)</label><br/><br/>
+
+<div>
+<label><input id="enableAutoStart" name="enableAutoStart" type="checkbox"/> Enable Auto Start</label>
+<select id="autoStartSelect"></select>
+<label>
+<input id="showSecondsToggle" name="showSecondsToggle" type="checkbox"/>
+  Show seconds in start/end times
+</label>
+
+</div><div style="display:flex; gap:10px; margin-top:10px;"><button id="btnStartImmediate">Start Immediately</button><button id="btnDisplayTimer">Display Timer</button><button id="btnToggleFullscreen">Toggle Fullscreen</button><button id="retroResumeBtn">Resume from Time</button><input id="retroStartTime" name="retroStartTime" type="time"/></div>
+<div id="sizePreview" style="margin-top: 10px; padding: 10px 0;">
+<div style="font-size: var(--font-size-title); font-weight: bold;">Title: Exam Title</div>
+<div style="font-size: var(--font-size-timer-text);">Text: Example instructions</div>
+<div style="font-size: var(--font-size-timer); font-weight: bold;">Timer 12:34</div> </div>
+
+
+
+</div>
+<div id="timerPage">
+<div id="leftColumn">
+<div>
+<div id="timerList"></div>
+<div id="currentLabel"></div>
+<div id="instructions"></div>
+</div>
+<div id="currentTime" style="font-size: var(--font-size-title); margin: 10px 0; text-align: Left;"></div>
+<div id="controls">
+<button id="pauseBtn">Pause</button>
+<button id="endBtn">End</button>
+<button id="fullscreenBtn">Fullscreen</button>
+</div>
+</div>
+<div id="rightColumn"><div id="examTitleDisplay" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); font-size:var(--font-size-title); text-align:center; width:100%; z-index:10;">{{examTitle}}</div>
+<img alt="Logo" id="logo" src="logo.jpg" style="position: absolute; top: 10px; right: 10px; width: 20%; height: auto;"/>
+<div id="autoStartMsg" style="font-size: var(--font-size-title); color: var(--color-text); margin-bottom: 20px;"></div>
+<span id="timeRemainingLabel" style="font-size:var(--font-size-timer-text); margin-right:10px;">Time remaining</span><div id="timerDisplay">00:00</div>
+
+<div id="timeFooter">
+  <div id="clockContainer">
+  <div id="clockLabel" style="font-size:var(--font-size-timer-text); margin-bottom: 4px;">Current Time</div>
+
+<br><br>
+
+  <div id="clock" class="bottomClock"></div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<script>
+  const setupPage = document.getElementById("setupPage");
+  const timerPage = document.getElementById("timerPage");
+  const timersContainer = document.getElementById("timersContainer");
+  const pauseBtn = document.getElementById("pauseBtn");
+  const endBtn = document.getElementById("endBtn");
+  const timerDisplay = document.getElementById("timerDisplay");
+  const currentLabel = document.getElementById("currentLabel");
+  const instructions = document.getElementById("instructions");
+  
+  
+  const autoStartMsg = document.getElementById("autoStartMsg");
+  const timerList = document.getElementById("timerList");
+  const simulate = document.getElementById("simulateCheckbox").checked;
+  const tickRate = simulate ? 100 : 1000; // 10x faster
+  const flashDuration = parseInt(document.getElementById("flashDurationSelect").value, 10);
+  
+  let timers = [];
+  let timerInterval;
+  let timeRemaining = 0;
+  let currentTimerIndex = 0;
+  let startTime = null;
+  let endTime = null;
+  let waitingToStartNext = false;
+  let flashingInterval = null;
+
+
+let flashStarted = false;
+let warningFlashed = false;
+let endFlashStarted = false;
+
+function createTimerEntry(label = "", duration = 5, note = "", autoPause = false, warningEnabled = false, warningMinutes = 10, endMessage = "Time is up") {
+  const entry = document.createElement("div"); // ✅ This line is missing in your file
+  entry.className = "timerEntry";
+const uniqueId = Date.now(); 
+  entry.innerHTML = `
+    <label>Label: <input type="text" name="TimerLabel" class="label" value="${label}"></label><br>
+    <label>Duration (min): <input type="number" name="TimerLength" class="duration" value="${duration}"></label><br>
+    <label>Instructions:<br><textarea class="note" name="InstructionArea" rows="5" style="width:100%; resize: vertical">${note}</textarea></label><br>
+    <label>End Message: <input type="text" class="endMessage" name="TimerEndMessage" value="${endMessage}"></label><br>
+  `;
+
+  // rest of the function...
+
+
+
+  const optionsRow = document.createElement("div");
+  optionsRow.style.display = "flex";
+  optionsRow.style.gap = "10px";
+  optionsRow.style.alignItems = "center";
+
+  const autoPauseLabel = document.createElement("label");
+  const autoPauseCheckbox = document.createElement("input");
+  autoPauseCheckbox.type = "checkbox";
+  autoPauseCheckbox.className = "autoPause";  
+  autoPauseCheckbox.id = `autoPause-${uniqueId}`;
+  autoPauseCheckbox.name = `autoPause-${uniqueId}`;
+  autoPauseCheckbox.checked = autoPause;
+  autoPauseLabel.appendChild(autoPauseCheckbox);
+  autoPauseLabel.appendChild(document.createTextNode("Pause at End of Timer"));
+  optionsRow.appendChild(autoPauseLabel);
+
+  const warningToggleLabel = document.createElement("label");
+  const warningToggleCheckbox = document.createElement("input");
+  warningToggleCheckbox.type = "checkbox";
+  warningToggleCheckbox.className = "warningToggle";
+  
+warningToggleCheckbox.id = `warningToggle-${uniqueId}`;
+  warningToggleCheckbox.name = `warningToggle-${uniqueId}`;
+
+  warningToggleCheckbox.checked = warningEnabled;
+  warningToggleLabel.appendChild(warningToggleCheckbox);
+  warningToggleLabel.appendChild(document.createTextNode(" Enable Warning"));
+  optionsRow.appendChild(warningToggleLabel);
+
+  const warningTimeLabel = document.createElement("label");
+  warningTimeLabel.textContent = "Warning Time (minutes): ";
+  const warningTimeInput = document.createElement("input");
+  warningTimeInput.type = "number";
+  warningTimeInput.className = "warningTime";
+  
+warningTimeInput.id = `warningTime-${uniqueId}`;
+  warningTimeInput.name = `warningTime-${uniqueId}`;
+
+  warningTimeInput.value = warningMinutes;
+  warningTimeInput.min = "1";
+  warningTimeLabel.appendChild(warningTimeInput);
+  optionsRow.appendChild(warningTimeLabel);
+
+  entry.appendChild(optionsRow);
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.textContent = "Delete This Timer";
+  deleteBtn.style.marginTop = "10px";
+  deleteBtn.style.backgroundColor = "#e74c3c";
+  deleteBtn.style.color = "white";
+  deleteBtn.style.border = "none";
+  deleteBtn.style.padding = "8px";
+  deleteBtn.style.borderRadius = "5px";
+  deleteBtn.style.cursor = "pointer";
+  deleteBtn.addEventListener("click", () => {
+    entry.remove();
+  });
+  entry.appendChild(deleteBtn);
+
+  timersContainer.appendChild(entry);
+}
+
+
+function parseTimers() {
+  timers = [];
+  const entries = timersContainer.querySelectorAll(".timerEntry");
+  entries.forEach(entry => {
+    const label = entry.querySelector(".label").value;
+    const duration = parseInt(entry.querySelector(".duration").value, 10);
+    const note = entry.querySelector(".note").value;
+    const autoPause = entry.querySelector(".autoPause")?.checked || false;
+    const warningToggle = entry.querySelector(".warningToggle")?.checked || false;
+    const warningTime = parseInt(entry.querySelector(".warningTime")?.value || "10", 10);
+    const endMessage = entry.querySelector(".endMessage")?.value || "Time is up";
+
+    timers.push({
+      label,
+      duration,
+      instructions: note,
+      autoPause,
+      warningEnabled: warningToggle,
+      warningMinutes: warningTime,
+      endMessage,
+      startTime: null,
+      endTime: null
+    });
+  });
+}
+
+
+function renderTimerList() {
+  const showSeconds = document.getElementById('showSecondsToggle').checked;
+  const timeFormat = showSeconds
+    ? { hour: "2-digit", minute: "2-digit", second: "2-digit" }
+    : { hour: "2-digit", minute: "2-digit" };
+
+  timerList.innerHTML = timers.map((t) => {
+    const start = t.startTime
+      ? t.startTime.toLocaleTimeString([], timeFormat)
+      : "--:--";
+    const end = t.endTime
+      ? t.endTime.toLocaleTimeString([], timeFormat)
+      : "--:--";
+
+    let warningLine = "";
+    if (t.warningEnabled && t.endTime) {
+      const warningTime = new Date(t.endTime.getTime() - t.warningMinutes * 60000);
+      const warn = warningTime.toLocaleTimeString([], timeFormat);
+      warningLine = `
+        <div class="time-block">
+          <div class="label">Warning:</div>
+          <div class="value">${warn}</div>
+        </div>`;
+    }
+
+    return `
+      <div class="timerEntry">
+        <div style="font-size: var(--font-size-title); font-weight: bold; line-height: 1; margin: 0; text-align: left;">
+          ${t.label} (${t.duration} min)
+        </div>
+        <div class="time-block">
+          <div class="label">Begin:</div>
+          <div class="value">${start}</div>
+        </div>
+        ${warningLine}
+        <div class="time-block">
+          <div class="label">End:</div>
+          <div class="value">${end}</div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+
+
+
+  function updateTimeDisplays() {
+    startTimeDisplay.textContent = startTime ? startTime.toLocaleTimeString() : "--";
+    endTimeDisplay.textContent = endTime ? endTime.toLocaleTimeString() : "--";
+  }
+
+  function updateTimerDisplay() {
+    const m = String(Math.floor(timeRemaining / 60)).padStart(2, "0");
+    const s = String(timeRemaining % 60).padStart(2, "0");
+    timerDisplay.textContent = `${m}:${s}`;
+  }
+
+function startNextTimer() {
+  stopFlashing();
+  clearInterval(timerInterval);
+  timerInterval = null;
+
+  if (currentTimerIndex >= timers.length) {
+    timerDisplay.textContent = timers[timers.length - 1]?.endMessage || "Time is up";
+    return;
+  }
+
+  const current = timers[currentTimerIndex];
+  timeRemaining = current.duration * 60;
+flashStarted = false;
+warningFlashed = false;
+endFlashStarted = false;
+
+
+  const flashDuration = parseInt(document.getElementById("flashDurationSelect").value, 10);
+  currentLabel.textContent = current.label;
+  instructions.innerHTML = current.instructions
+  .replace(/\r\n/g, "<br>")
+  .replace(/\n/g, "<br>")
+  .replace(/\r/g, "<br>");
+
+  
+  const now = new Date();
+  const startTime = now;
+  const endTime = new Date(now.getTime() + timeRemaining * 1000);
+  timers[currentTimerIndex].startTime = startTime;
+  timers[currentTimerIndex].endTime = endTime;
+
+  
+  updateTimerDisplay();
+  renderTimerList();
+
+  pauseBtn.textContent = "Pause";
+  waitingToStartNext = false;
+
+  timerInterval = setInterval(() => {
+    timeRemaining--;
+    updateTimerDisplay();
+    updateClock();
+	
+	// Flash at warning time
+const flashDuration = parseInt(document.getElementById("flashDurationSelect").value, 10);
+
+// Flash before warning time
+if (
+  current.warningEnabled &&
+  !flashStarted &&
+  timeRemaining === current.warningMinutes * 60 + flashDuration
+) {
+  startFlashing();
+  flashStarted = true;
+}
+
+// Stop flashing at warning time
+if (
+  current.warningEnabled &&
+  flashStarted &&
+  !warningFlashed &&
+  timeRemaining === current.warningMinutes * 60
+) {
+  stopFlashing();
+  warningFlashed = true;
+}
+
+// Flash before end of timer
+if (
+  !endFlashStarted &&
+  timeRemaining === flashDuration
+) {
+  startFlashing();
+  endFlashStarted = true;
+}
+
+// Stop flashing when timer ends
+if (timeRemaining <= 0) {
+  stopFlashing();
+  clearInterval(timerInterval);
+  timerInterval = null;
+  timerDisplay.textContent = current.endMessage || "Time is up";
+  if (current.autoPause) {
+    pauseBtn.textContent = "Start";
+    waitingToStartNext = true;
+    return;
+  }
+  currentTimerIndex++;
+  startNextTimer();
+}
+
+
+
+    if (timeRemaining <= 0) {
+      stopFlashing();
+      clearInterval(timerInterval);
+      timerInterval = null;
+
+      // Show end message
+      timerDisplay.textContent = current.endMessage || "Time is up";
+
+      if (current.autoPause) {
+        pauseBtn.textContent = "Start";
+        waitingToStartNext = true;
+        return;
+      }
+
+      currentTimerIndex++;
+      startNextTimer();
+    }
+  }, getTickRate());
+}
+
+
+
+function startFlashing() {
+  if (flashingInterval) return;
+
+  flashingInterval = setInterval(() => {
+    document.body.classList.toggle("invert");
+    document.getElementById("rightColumn").classList.toggle("invert");
+  }, 500); // 1 second for full cycle (0.5s fade in, 0.5s fade out)
+}
+
+function stopFlashing() {
+  clearInterval(flashingInterval);
+  flashingInterval = null;
+  document.body.classList.remove("invert");
+  document.getElementById("rightColumn").classList.remove("invert");
+}
+
+
+
+
+
+
+pauseBtn.addEventListener("click", () => {
+  if (waitingToStartNext) {
+    // Start the next timer
+    startTime = new Date();
+    endTime = new Date(startTime.getTime() + timeRemaining * 1000);
+    timers[currentTimerIndex].startTime = startTime;
+    timers[currentTimerIndex].endTime = endTime;
+    
+    updateTimerDisplay();
+    renderTimerList();
+    timerInterval = setInterval(() => {
+      timeRemaining--;
+      updateTimerDisplay();
+      updateClock();
+      if (timeRemaining <= 0) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        currentTimerIndex++;
+        startNextTimer();
+      }
+    }, getTickRate());
+    pauseBtn.textContent = "Pause";
+    waitingToStartNext = false;
+    return;
+  }
+
+  // Normal pause/resume toggle
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    pauseBtn.textContent = "Resume";
+  } else {
+    // ✅ Only set start/end time if not already set
+    if (!timers[currentTimerIndex].startTime || !timers[currentTimerIndex].endTime) {
+      startTime = new Date();
+      endTime = new Date(startTime.getTime() + timeRemaining * 1000);
+      timers[currentTimerIndex].startTime = startTime;
+      timers[currentTimerIndex].endTime = endTime;
+      
+      renderTimerList();
+    } else {
+		endTime = new Date(Date.now() + timeRemaining * 1000);
+		timers[currentTimerIndex].endTime = endTime;
+		
+		renderTimerList();
+    }
+
+    timerInterval = setInterval(() => {
+      timeRemaining--;
+      updateTimerDisplay();
+      updateClock();
+      if (timeRemaining <= 0) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        currentTimerIndex++;
+        startNextTimer();
+      }
+    }, getTickRate());
+    pauseBtn.textContent = "Pause";
+  }
+});
+
+  endBtn.addEventListener("click", () => {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    currentTimerIndex = 0;
+	stopFlashing(); 
+    timerDisplay.textContent = "00:00";
+    currentLabel.textContent = "";
+    instructions.textContent = "";
+    setupPage.style.display = "block";
+    timerPage.classList.remove("active");
+    pauseBtn.textContent = "Pause";
+  });
+
+  document.getElementById("fullscreenBtn").addEventListener("click", () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  });
+
+  document.getElementById("addTimerBtn").addEventListener("click", () => {
+    createTimerEntry();
+  });
+
+document.getElementById("btnStartImmediate").addEventListener("click", () => {
+  parseTimers();
+  if (timers.length === 0) return alert("Please add at least one timer.");
+  document.getElementById("examTitleDisplay").textContent = document.getElementById("examTitle").value;
+  setupPage.style.display = "none";
+  timerPage.classList.add("active");
+  currentTimerIndex = 0;
+  startNextTimer();
+});
+
+
+
+document.getElementById("btnDisplayTimer").addEventListener("click", () => {
+  parseTimers();
+  document.getElementById("examTitleDisplay").textContent = document.getElementById("examTitle").value;
+  setupPage.style.display = "none";
+  timerPage.classList.add("active");
+
+  const first = timers[0];
+  if (first) {
+    timeRemaining = first.duration * 60;
+    currentLabel.textContent = first.label;
+    instructions.innerHTML = first.instructions
+  .replace(/\r\n/g, "<br>")
+  .replace(/\n/g, "<br>")
+  .replace(/\r/g, "<br>");
+
+    updateTimerDisplay();
+    renderTimerList();
+    pauseBtn.textContent = "Start";
+  }
+
+  // Auto-start logic
+  const enableAutoStart = document.getElementById("enableAutoStart").checked;
+  const autoStartSelect = document.getElementById("autoStartSelect");
+  const autoStartMsg = document.getElementById("autoStartMsg");
+
+	if (enableAutoStart) {
+	  const selectedTime = new Date(autoStartSelect.value);
+	  autoStartMsg.textContent = `Auto-starting at ${selectedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+
+	  function checkAutoStart() {
+		const now = new Date();
+		if (now >= selectedTime) {
+		  autoStartMsg.textContent = ""; // Clear message
+		  parseTimers();
+		  document.getElementById("examTitleDisplay").textContent = document.getElementById("examTitle").value;
+		  setupPage.style.display = "none";
+		  timerPage.classList.add("active");
+		  currentTimerIndex = 0;
+		  startNextTimer();
+		} else {
+		  setTimeout(checkAutoStart, 200); // Check every 200ms for better precision
+		}
+	  }
+
+	  checkAutoStart();
+	}
+
+});
+
+
+
+  // Fill autoStart dropdown with next 30 minutes
+  const autoStartSelect = document.getElementById("autoStartSelect");
+
+const now = new Date();
+now.setSeconds(0, 0); // Clear seconds and milliseconds
+if (new Date() > now) {
+  now.setMinutes(now.getMinutes() + 1); // Round up if we're past the current minute
+}
+
+for (let i = 1; i <= 30; i++) {
+  const t = new Date(now.getTime() + i * 60000);
+  const opt = document.createElement("option");
+  opt.value = t.toISOString();
+  opt.textContent = t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  autoStartSelect.appendChild(opt);
+}
+
+
+  // Initial sample timers
+  createTimerEntry("Planning", 10, "You must not write in the response book during planning time.\nWriting on the response book during planning time is considered academic misconduct.\nUnless otherwise specified, the number of lines for each question is indicative of the expected response length.", false, false, 0, "End of Planning Time");
+  createTimerEntry("Perusal", 5, "Use your perusal time to read the assessment materials.\nYou must not write anything or use a calculator during perusal time.\nWriting or using a calculator during perusal time is considered academic misconduct.\nUnless otherwise specified, the number of lines for each question is indicative of the expected response length.", false, false, 0, "End of Perusal Time");
+  createTimerEntry("Exam", 55, "Answer all questions to the best of your ability. Manage your time so that you give yourself every opportunity to finish the assessment.You must remain in the exam venue until the end of the session, even if you finish working early.", false, true, 10, "Stop Working");
+  setupPage.style.display = "block";
+  
+  document.addEventListener('input', function(e) {
+  if (e.target.tagName.toLowerCase() === 'textarea') {
+    e.target.style.height = 'auto';
+    e.target.style.height = e.target.scrollHeight + 'px';
+  }
+});
+
+const clock = document.getElementById("clock");
+function updateClock() {
+  const now = new Date();
+  clock.textContent = now.toLocaleTimeString();
+}
+
+const setupClockTime = document.getElementById("setupClockTime");
+function updateClock() {
+  const now = new Date();
+  clock.textContent = now.toLocaleTimeString();
+  if (setupClockTime) {
+    setupClockTime.textContent = now.toLocaleTimeString();
+  }
+}
+
+
+setInterval(updateClock, 1000);
+updateClock();  // initial call to set immediately
+
+
+function getTickRate() {
+  return document.getElementById("simulateCheckbox").checked ? 100 : 1000;
+}
+
+
+document.getElementById("flashNowBtn").addEventListener("click", () => {
+  startFlashing();
+  setTimeout(() => {
+    stopFlashing();
+  }, 3000); // Flash for 3 seconds manually
+});
+
+document.getElementById("retroResumeBtn").addEventListener("click", () => {
+  parseTimers();
+  const timeInput = document.getElementById("retroStartTime").value;
+  if (!timeInput || timers.length === 0) {
+    alert("Please select a time and ensure timers are defined.");
+    return;
+  }
+
+  const [hours, minutes] = timeInput.split(":").map(Number);
+  const now = new Date();
+  const retroStart = new Date(now);
+  retroStart.setHours(hours, minutes, 0, 0);
+
+  let currentTimeMarker = new Date(retroStart);
+  timers.forEach(timer => {
+    timer.startTime = new Date(currentTimeMarker);
+    currentTimeMarker = new Date(currentTimeMarker.getTime() + timer.duration * 60 * 1000);
+    timer.endTime = new Date(currentTimeMarker);
+  });
+
+  setupPage.style.display = "none";
+  timerPage.classList.add("active");
+  document.getElementById("examTitleDisplay").textContent = document.getElementById("examTitle").value;
+
+  const nowTime = new Date();
+  const last = timers[timers.length - 1];
+  if (nowTime >= last.endTime) {
+    timerDisplay.textContent = "Done";
+    currentLabel.textContent = "";
+    instructions.textContent = "";
+    startTime = null;
+    endTime = null;
+    renderTimerList();
+    return;
+  }
+
+  for (let i = 0; i < timers.length; i++) {
+    const currentTimer = timers[i];
+    if (nowTime < currentTimer.endTime) {
+      currentTimerIndex = i;
+      timeRemaining = Math.floor((currentTimer.endTime - nowTime) / 1000);
+      startTime = currentTimer.startTime;
+      endTime = currentTimer.endTime;
+      currentLabel.textContent = currentTimer.label;
+      instructions.innerHTML = currentTimer.instructions
+        .replace(/\r\n/g, "<br>")
+        .replace(/\n/g, "<br>")
+        .replace(/\r/g, "<br>");
+
+      flashStarted = false;
+      warningFlashed = false;
+      endFlashStarted = false;
+
+      updateTimerDisplay();
+      renderTimerList();
+      pauseBtn.textContent = "Pause";
+
+      timerInterval = setInterval(() => {
+        timeRemaining--;
+        updateTimerDisplay();
+        updateClock();
+
+        const flashDuration = parseInt(document.getElementById("flashDurationSelect").value, 10);
+
+        if (
+          currentTimer.warningEnabled &&
+          !flashStarted &&
+          timeRemaining === currentTimer.warningMinutes * 60 + flashDuration
+        ) {
+          startFlashing();
+          flashStarted = true;
+        }
+
+        if (
+          currentTimer.warningEnabled &&
+          flashStarted &&
+          !warningFlashed &&
+          timeRemaining === currentTimer.warningMinutes * 60
+        ) {
+          stopFlashing();
+          warningFlashed = true;
+        }
+
+        if (!endFlashStarted && timeRemaining === flashDuration) {
+          startFlashing();
+          endFlashStarted = true;
+        }
+
+        if (timeRemaining <= 0) {
+          stopFlashing();
+          clearInterval(timerInterval);
+          timerInterval = null;
+          timerDisplay.textContent = currentTimer.endMessage || "Time is up";
+          currentTimerIndex++;
+          startNextTimer();
+          return;
+        }
+      }, getTickRate());
+      break;
+    }
+  }
+});
+
+
+const fontSizes = {
+  xs: "4rem",
+  sm: "6rem",
+  md: "8rem",
+  lg: "10rem",
+  xl: "12rem"
+};
+const textSizes = {
+  xs: "1.2rem",
+  sm: "1.5rem",
+  md: "1.8rem",
+  lg: "2.1rem",
+  xl: "2.4rem"
+};
+
+const darkColors = [
+  { name: "Black", hex: "#000000" },
+  { name: "Navy", hex: "#001f3f" },
+  { name: "Maroon", hex: "#800000" },
+  { name: "Dark Green", hex: "#006400" },
+  { name: "Teal", hex: "#008080" },
+  { name: "Indigo", hex: "#4b0082" },
+  { name: "Midnight Blue", hex: "#191970" },
+  { name: "Dark Slate Gray", hex: "#2f4f4f" },
+  { name: "Olive", hex: "#808000" },
+  { name: "Dark Red", hex: "#8b0000" }
+];
+
+
+const lightColors = [
+  { name: "Lavender", hex: "#f3e5f5" },         // Reference point
+  { name: "Thistle", hex: "#d8bfd8" },
+  { name: "Misty Rose", hex: "#ffe4e1" },
+  { name: "Peach Puff", hex: "#ffdab9" },
+  { name: "Light Steel Blue", hex: "#b0c4de" },
+  { name: "Powder Blue", hex: "#b0e0e6" },
+  { name: "Light Blue", hex: "#add8e6" },
+  { name: "Pale Turquoise", hex: "#afeeee" },
+  { name: "Honeydew", hex: "#f0fff0" },         // One of the two lighter ones
+  { name: "Ivory", hex: "#fffff0" }             // Second lighter one
+];
+
+
+
+
+function populateColorDropdown(select, darks, lights) {
+  const groupDark = document.createElement("optgroup");
+  groupDark.label = "Dark Colors";
+  darks.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c.hex;
+    opt.textContent = c.name;
+    opt.style.backgroundColor = c.hex;
+    opt.style.color = "white";
+    groupDark.appendChild(opt);
+  });
+
+  const groupLight = document.createElement("optgroup");
+  groupLight.label = "Light Colors";
+  lights.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c.hex;
+    opt.textContent = c.name;
+    opt.style.backgroundColor = c.hex;
+    opt.style.color = "black";
+    groupLight.appendChild(opt);
+  });
+
+  select.appendChild(groupDark);
+  select.appendChild(groupLight);
+}
+
+
+function applyPreferences() {
+  const timerSize = localStorage.getItem("timerSize") || "md";
+  const textSize = localStorage.getItem("textSize") || "md";
+  const textColor = localStorage.getItem("textColor") || "#000000";
+  const bgColor = localStorage.getItem("bgColor") || "#ffffff";
+
+  document.documentElement.style.setProperty("--font-size-timer", fontSizes[timerSize]);
+  const textRem = parseFloat(textSizes[textSize]);
+  const titleRem = (textRem * 1.3).toFixed(2) + "rem";
+  document.documentElement.style.setProperty("--font-size-title", titleRem);
+  document.documentElement.style.setProperty("--font-size-timer-text", textSizes[textSize]);
+  document.documentElement.style.setProperty("--font-size-setup-text", textSizes[textSize]);
+
+  document.documentElement.style.setProperty("--color-text", textColor);
+  document.documentElement.style.setProperty("--color-bg", bgColor);
+
+	// Auto-set left column background to be contrasting
+	const leftBg = adjustLightness(bgColor, isLightColor(bgColor) ? -0.08 : 0.08); // 8% contrast
+	document.documentElement.style.setProperty("--color-bg-left", leftBg);
+
+  document.getElementById("timerSizeSelect").value = timerSize;
+  document.getElementById("textSizeSelect").value = textSize;
+  document.getElementById("textColorSelect").value = textColor;
+  document.getElementById("bgColorSelect").value = bgColor;
+
+  function isLightColor(hex) {
+  hex = hex.replace("#", "");
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness > 128;
+}
+}
+
+function savePreferences() {
+  const timerSize = document.getElementById("timerSizeSelect").value;
+  const textSize = document.getElementById("textSizeSelect").value;
+  const textColor = document.getElementById("textColorSelect").value;
+  const bgColor = document.getElementById("bgColorSelect").value;
+
+  localStorage.setItem("timerSize", timerSize);
+  localStorage.setItem("textSize", textSize);
+  localStorage.setItem("textColor", textColor);
+  localStorage.setItem("bgColor", bgColor);
+
+  applyPreferences();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  populateColorDropdown(document.getElementById("textColorSelect"), darkColors, lightColors);
+  populateColorDropdown(document.getElementById("bgColorSelect"), darkColors, lightColors);
+
+  document.getElementById("timerSizeSelect").addEventListener("change", savePreferences);
+  document.getElementById("textSizeSelect").addEventListener("change", savePreferences);
+  document.getElementById("textColorSelect").addEventListener("change", savePreferences);
+  document.getElementById("bgColorSelect").addEventListener("change", savePreferences);
+
+  applyPreferences();
+});
+
+function adjustLightness(hex, amount) {
+  hex = hex.replace("#", "");
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+
+  // Convert RGB to HSL
+  const rNorm = r / 255, gNorm = g / 255, bNorm = b / 255;
+  const max = Math.max(rNorm, gNorm, bNorm);
+  const min = Math.min(rNorm, gNorm, bNorm);
+  let h, s, l = (max + min) / 2;
+
+  if (max === min) {
+    h = s = 0; // achromatic
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case rNorm: h = (gNorm - bNorm) / d + (gNorm < bNorm ? 6 : 0); break;
+      case gNorm: h = (bNorm - rNorm) / d + 2; break;
+      case bNorm: h = (rNorm - gNorm) / d + 4; break;
+    }
+    h /= 6;
+  }
+
+  // Adjust lightness
+  l = Math.max(0, Math.min(1, l + amount)); // clamp between 0 and 1
+
+  // Convert HSL back to RGB
+  function hslToRgb(h, s, l) {
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+
+    const r = Math.round(hue2rgb(p, q, h + 1 / 3) * 255);
+    const g = Math.round(hue2rgb(p, q, h) * 255);
+    const b = Math.round(hue2rgb(p, q, h - 1 / 3) * 255);
+
+    return `#${r.toString(16).padStart(2, "0")}${g
+      .toString(16)
+      .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+  }
+
+  return hslToRgb(h, s, l);
+}
+
+
+document.getElementById("btnToggleFullscreen").addEventListener("click", () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+});
+
+
+document.addEventListener("keydown", (e) => {
+  if (timerPage.classList.contains("active")) {
+    
+	if (e.key === " ") {
+	      e.preventDefault(); // Prevent page scroll
+	      pauseBtn.click();   // Simulate button click
+	    }
+	if (e.key.toLowerCase() === "f") {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    }
+  }
+});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chemical Equation Balancer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f9f9f9;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2em;
+    }
+    .controls {
+      margin: 10px;
+    }
+    .equation {
+      margin: 30px auto;
+      padding: 15px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: fit-content;
+      font-size: 1.25em;
+    }
+    .molecule {
+      display: inline-block;
+      margin: 0 5px;
+    }
+    .coefficient {
+      width: 40px;
+      font-size: 1em;
+    }
+    sub {
+      vertical-align: sub;
+      font-size: 0.75em;
+    }
+    .atom-count {
+      font-size: 0.9em;
+      color: #555;
+      margin-top: 10px;
+    }
+    .diagram {
+      display: none;
+      margin-top: 5px;
+    }
+    .count-table {
+      border-collapse: collapse;
+      margin-top: 5px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .count-table td {
+      padding: 2px 8px;
+    }
+    .count-table .divider {
+      border-left: 2px solid #000;
+      padding-left: 8px;
+    }
+    .balanced {
+      color: green;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+    .unbalanced {
+      color: red;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+    .reset-button {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Chemical Equation Balancer Simulator</h1>
+  <div class="controls">
+    <label><input type="checkbox" id="toggleDiagrams" checked> Show Molecular Diagrams</label>
+    <select id="difficulty">
+      <option value="all">All</option>
+      <option value="easy">Easy</option>
+      <option value="medium">Medium</option>
+      <option value="hard">Hard</option>
+      <option value="challenge">Challenge</option>
+    </select>
+    <button onclick="resetAll()">Reset All</button>
+    <span id="score"></span>
+  </div>
+  <div id="equations"></div>
+
+  <script>
+    const toSubscript = (formula) => formula.replace(/(\d+)/g, '<sub>$1</sub>');
+
+    const sets = {
+      easy: [
+        { left: ["H2", "O2"], right: ["H2O"] },
+        { left: ["N2", "H2"], right: ["NH3"] },
+        { left: ["CO2", "H2"], right: ["CH4", "H2O"] },
+        { left: ["Na", "Cl2"], right: ["NaCl"] },
+        { left: ["Ca", "O2"], right: ["CaO"] },
+        { left: ["Al", "O2"], right: ["Al2O3"] },
+        { left: ["Fe", "O2"], right: ["Fe2O3"] },
+        { left: ["Mg", "O2"], right: ["MgO"] },
+        { left: ["H2", "Cl2"], right: ["HCl"] },
+        { left: ["Na", "O2"], right: ["Na2O"] },
+        { left: ["H2", "Br2"], right: ["HBr"] },
+        { left: ["C", "O2"], right: ["CO2"] },
+        { left: ["S", "O2"], right: ["SO2"] },
+        { left: ["Zn", "HCl"], right: ["ZnCl2", "H2"] },
+        { left: ["K", "Cl2"], right: ["KCl"] },
+        { left: ["Ba", "Cl2"], right: ["BaCl2"] },
+        { left: ["Ag", "Cl2"], right: ["AgCl"] },
+        { left: ["Cu", "O2"], right: ["CuO"] },
+        { left: ["Pb", "O2"], right: ["PbO2"] },
+        { left: ["H2", "I2"], right: ["HI"] },
+      ],
+      medium: [
+        { left: ["C2H6", "O2"], right: ["CO2", "H2O"] },
+        { left: ["CH4", "O2"], right: ["CO2", "H2O"] },
+        { left: ["C3H8", "O2"], right: ["CO2", "H2O"] },
+        { left: ["C4H10", "O2"], right: ["CO2", "H2O"] },
+        { left: ["Fe", "H2O"], right: ["Fe3O4", "H2"] },
+        { left: ["Al", "HCl"], right: ["AlCl3", "H2"] },
+        { left: ["KClO3"], right: ["KCl", "O2"] },
+        { left: ["Na", "H2O"], right: ["NaOH", "H2"] },
+        { left: ["Fe2O3", "CO"], right: ["Fe", "CO2"] },
+        { left: ["Pb(NO3)2"], right: ["PbO", "NO2", "O2"] }
+      ],
+      hard: [
+        { left: ["C6H12O6", "O2"], right: ["CO2", "H2O"] },
+        { left: ["NH3", "O2"], right: ["NO", "H2O"] },
+        { left: ["NaOH", "H2SO4"], right: ["Na2SO4", "H2O"] },
+        { left: ["Ca3(PO4)2", "H2SO4"], right: ["CaSO4", "H3PO4"] },
+        { left: ["K2Cr2O7", "HCl"], right: ["KCl", "CrCl3", "Cl2", "H2O"] },
+        { left: ["Cu", "HNO3"], right: ["Cu(NO3)2", "NO2", "H2O"] },
+        { left: ["C2H5OH", "O2"], right: ["CO2", "H2O"] },
+        { left: ["C6H6", "O2"], right: ["CO2", "H2O"] },
+        { left: ["KMnO4", "HCl"], right: ["KCl", "MnCl2", "Cl2", "H2O"] },
+        { left: ["FeS2", "O2"], right: ["Fe2O3", "SO2"] }
+      ],
+      challenge: [
+        { left: ["C12H22O11", "O2"], right: ["CO2", "H2O"] },
+        { left: ["H2SO4", "NaCl"], right: ["HCl", "NaHSO4"] },
+        { left: ["Na2CO3", "HCl"], right: ["NaCl", "H2O", "CO2"] },
+        { left: ["Fe", "H2O", "O2"], right: ["Fe(OH)3"] },
+        { left: ["NH4NO3"], right: ["N2O", "H2O"] },
+        { left: ["Na", "NH3"], right: ["NaNH2", "H2"] },
+        { left: ["Na2S2O3", "I2"], right: ["NaI", "Na2S4O6"] },
+        { left: ["Al", "Fe2O3"], right: ["Fe", "Al2O3"] },
+        { left: ["Cu", "H2SO4"], right: ["CuSO4", "SO2", "H2O"] },
+        { left: ["Na", "O2"], right: ["Na2O2"] }
+      ]
+    };
+
+    let activeSet = 'all';
+    let startTime = Date.now();
+    let score = 0;
+
+    const preBalanced = [9, 13, 17];
+    const interacted = new Set();
+
+    const elementCounts = (formula, coef) => {
+      const counts = {};
+      const re = /([A-Z][a-z]*)(\d*)/g;
+      let match;
+      while ((match = re.exec(formula)) !== null) {
+        const element = match[1];
+        const count = parseInt(match[2] || '1', 10);
+        counts[element] = (counts[element] || 0) + count * coef;
+      }
+      return counts;
+    };
+
+    const combineCounts = (molecules, coefs) => {
+      const combined = {};
+      molecules.forEach((mol, i) => {
+        const count = elementCounts(mol, coefs[i]);
+        for (let el in count) {
+          combined[el] = (combined[el] || 0) + count[el];
+        }
+      });
+      return combined;
+    };
+
+    function renderEquations() {
+      const container = document.getElementById('equations');
+      container.innerHTML = '';
+      let equationsData = [];
+      if (activeSet === 'all') {
+        equationsData = [...sets.easy, ...sets.medium, ...sets.hard, ...sets.challenge];
+      } else {
+        equationsData = [...sets[activeSet]];
+      }
+      equationsData.forEach((eq, idx) => {
+        const leftInputs = eq.left.map((mol, i) => `<input class="coefficient" type="number" value="1" min="0" data-side="left" data-eq="${idx}" data-idx="${i}"> <span class="molecule">${toSubscript(mol)}</span>`).join(' + ');
+        const rightInputs = eq.right.map((mol, i) => `<input class="coefficient" type="number" value="1" min="0" data-side="right" data-eq="${idx}" data-idx="${i}"> <span class="molecule">${toSubscript(mol)}</span>`).join(' + ');
+        const div = document.createElement('div');
+        div.className = 'equation';
+        div.innerHTML = `
+          <div><strong>Equation ${idx + 1}:</strong><br>${leftInputs} → ${rightInputs}</div>
+          <table class="count-table" id="atomCount${idx}"></table>
+          <div class="balanced" id="balanced${idx}" style="display: none;">✅ Balanced</div>
+          <div class="unbalanced" id="unbalanced${idx}" style="display: none;">❌ Not balanced</div>
+          <div class="diagram" id="diagram${idx}">[Molecular diagrams go here]</div>
+          <button class="reset-button" onclick="resetEquation(${idx})">Reset This</button>
+        `;
+        container.appendChild(div);
+      });
+      updateAllCounts();
+    }
+
+    function updateAllCounts() {
+      const equations = document.querySelectorAll('.equation');
+      equations.forEach((_, idx) => {
+        const leftInputs = document.querySelectorAll(`[data-side="left"][data-eq="${idx}"]`);
+        const rightInputs = document.querySelectorAll(`[data-side="right"][data-eq="${idx}"]`);
+        const leftCoefs = Array.from(leftInputs).map(el => parseInt(el.value));
+        const rightCoefs = Array.from(rightInputs).map(el => parseInt(el.value));
+        const eq = activeSet === 'all' ? [...sets.easy, ...sets.medium, ...sets.hard, ...sets.challenge][idx] : sets[activeSet][idx];
+        const leftCounts = combineCounts(eq.left, leftCoefs);
+        const rightCounts = combineCounts(eq.right, rightCoefs);
+        const allElements = new Set([...Object.keys(leftCounts), ...Object.keys(rightCounts)]);
+        const rows = [...allElements].sort().map(el => `<tr><td>${el} = ${leftCounts[el] || 0}</td><td class="divider">${el} = ${rightCounts[el] || 0}</td></tr>`).join('');
+        document.getElementById(`atomCount${idx}`).innerHTML = rows;
+
+        const balanced = [...allElements].every(el => (leftCounts[el] || 0) === (rightCounts[el] || 0));
+        const show = interacted.has(idx);
+        document.getElementById(`balanced${idx}`).style.display = balanced && show ? 'block' : 'none';
+        document.getElementById(`unbalanced${idx}`).style.display = !balanced && show ? 'block' : 'none';
+
+        if (balanced && !interacted.has(`done-${idx}`)) {
+          const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+          score += Math.max(100 - timeTaken, 10);
+          document.getElementById('score').textContent = `Score: ${score}`;
+          interacted.add(`done-${idx}`);
+        }
+      });
+    }
+
+    function resetEquation(idx) {
+      document.querySelectorAll(`[data-eq="${idx}"]`).forEach(input => input.value = 1);
+      interacted.delete(`done-${idx}`);
+      updateAllCounts();
+    }
+
+    function resetAll() {
+      document.querySelectorAll('.coefficient').forEach(input => input.value = 1);
+      interacted.clear();
+      score = 0;
+      document.getElementById('score').textContent = '';
+      startTime = Date.now();
+      updateAllCounts();
+    }
+
+    document.getElementById('toggleDiagrams').addEventListener('change', (e) => {
+      document.querySelectorAll('.diagram').forEach(d => d.style.display = e.target.checked ? 'block' : 'none');
+    });
+
+    document.getElementById('difficulty').addEventListener('change', (e) => {
+      activeSet = e.target.value;
+      resetAll();
+      renderEquations();
+    });
+
+    document.addEventListener('input', (e) => {
+      if (e.target.classList.contains('coefficient')) {
+        const eqIdx = parseInt(e.target.dataset.eq);
+        interacted.add(eqIdx);
+        updateAllCounts();
+      }
+    });
+
+    renderEquations();
+  </script>
+</body>
+</html>
