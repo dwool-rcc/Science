@@ -17,22 +17,21 @@
   <ul id="file-list"></ul>
 
   <script>
-    fetch('files.json')
-      .then(response => response.json())
-      .then(files => {
-        const list = document.getElementById('file-list');
-        files.forEach(file => {
-          const li = document.createElement('li');
-          const a = document.createElement('a');
-          a.href = file;
-          a.textContent = file;
-          li.appendChild(a);
-          list.appendChild(li);
-        });
-      })
-      .catch(error => {
-        console.error('Error loading file list:', error);
-      });
+    const files = [
+      "balance.html",
+      "clock_timer.html",
+      "periodic_table_bingo.html"
+    ];
+
+    const list = document.getElementById('file-list');
+    files.forEach(file => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = file;
+      a.textContent = file;
+      li.appendChild(a);
+      list.appendChild(li);
+    });
   </script>
 </body>
 </html>
