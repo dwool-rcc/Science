@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HTML File Index</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { color: #333; }
+    ul { list-style-type: none; padding: 0; }
+    li { margin: 8px 0; }
+    a { text-decoration: none; color: #0077cc; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>HTML Files</h1>
+  <ul id="file-list"></ul>
+
+  <script>
+    fetch('files.json')
+      .then(response => response.json())
+      .then(files => {
+        const list = document.getElementById('file-list');
+        files.forEach(file => {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = file;
+          a.textContent = file;
+          li.appendChild(a);
+          list.appendChild(li);
+        });
+      })
+      .catch(error => {
+        console.error('Error loading file list:', error);
+      });
+  </script>
+</body>
+</html>
